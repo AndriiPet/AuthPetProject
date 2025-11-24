@@ -1,6 +1,8 @@
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.OpenIdConnect;
 using Microsoft.Net.Http.Headers;
+using Microsoft.IdentityModel.JsonWebTokens;
+using Microsoft.AspNetCore.Authentication;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -8,6 +10,10 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllersWithViews()
     .AddJsonOptions(configure => 
         configure.JsonSerializerOptions.PropertyNamingPolicy = null);
+
+JsonWebTokenHandler.DefaultInboundClaimTypeMap.Clear();
+
+builder.Services.AddAccessTokenManagement();
 
 // create an HttpClient used for accessing the API
 builder.Services.AddHttpClient("APIClient", client =>
@@ -21,7 +27,10 @@ builder.Services.AddAuthentication(options =>
 {
     options.DefaultScheme = CookieAuthenticationDefaults.AuthenticationScheme;
     options.DefaultChallengeScheme = OpenIdConnectDefaults.AuthenticationScheme;
-}).AddCookie(CookieAuthenticationDefaults.AuthenticationScheme)
+}).AddCookie(CookieAuthenticationDefaults.AuthenticationScheme, options =>
+{
+    options.AccessDeniedPath = "/Authentication/AccessDenied";
+})
 .AddOpenIdConnect(OpenIdConnectDefaults.AuthenticationScheme, options =>
 {
     options.SignInScheme = CookieAuthenticationDefaults.AuthenticationScheme;
@@ -33,6 +42,18 @@ builder.Services.AddAuthentication(options =>
     //options.Scope.Add("profile");
     //options.CallbackPath = new PathString("signin-oidc");
     options.SaveTokens = true;
+    options.GetClaimsFromUserInfoEndpoint = true;
+    options.ClaimActions.Remove("aud");
+    options.ClaimActions.DeleteClaim("sid");
+    options.ClaimActions.DeleteClaim("idp");
+    options.Scope.Add("roles");
+    options.Scope.Add("imagegalleryapi.fullaccess");
+    options.ClaimActions.MapJsonKey("role", "role");
+    options.TokenValidationParameters = new()
+    {
+        NameClaimType = "given_name",
+        RoleClaimType = "role"
+    };
 });
 
 var app = builder.Build();

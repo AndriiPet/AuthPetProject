@@ -9,12 +9,26 @@ public static class Config
         new IdentityResource[]
         { 
             new IdentityResources.OpenId(),
-            new IdentityResources.Profile()
+            new IdentityResources.Profile(),
+            new IdentityResource("roles", 
+                "Your roles",
+                new [] { "role" })
+        };
+
+    public static IEnumerable<ApiResource> ApiResource =>
+    new ApiResource[]
+        {
+            new ApiResource("imagegalleryapi", "Image Gallery API")
+            {
+                Scopes = { "imagegalleryapi.fullaccess" }
+            }
         };
 
     public static IEnumerable<ApiScope> ApiScopes =>
         new ApiScope[]
-            { };
+            { 
+                new ApiScope("imagegalleryapi.fullaccess")
+            };
 
     public static IEnumerable<Client> Clients =>
         new Client[] 
@@ -28,10 +42,16 @@ public static class Config
                     {
                         "https://localhost:7184/signin-oidc"
                     },
+                    PostLogoutRedirectUris =
+                    {
+                        "https://localhost:7184/signout-callback-oidc"
+                    },
                     AllowedScopes =
                     {
                         IdentityServerConstants.StandardScopes.OpenId,
                         IdentityServerConstants.StandardScopes.Profile,
+                        "roles",
+                        "imagegalleryapi.fullaccess"
                     },
                     ClientSecrets =
                     {
