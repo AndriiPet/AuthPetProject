@@ -3,6 +3,7 @@ using ImageGallery.API.Services;
 using ImageGallery.Model;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 
 namespace ImageGallery.API.Controllers
 {
@@ -29,10 +30,17 @@ namespace ImageGallery.API.Controllers
         }
 
         [HttpGet()]
+
         public async Task<ActionResult<IEnumerable<Image>>> GetImages()
         {
+            var ownerId = User.Claims
+                .FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
+            if (ownerId == null)
+            {
+                throw new ArgumentNullException(nameof(ownerId));
+            }
             // get from repo
-            var imagesFromRepo = await _galleryRepository.GetImagesAsync();
+            var imagesFromRepo = await _galleryRepository.GetImagesAsync(ownerId);
 
             // map to model
             var imagesToReturn = _mapper.Map<IEnumerable<Image>>(imagesFromRepo);
@@ -57,6 +65,7 @@ namespace ImageGallery.API.Controllers
         }
 
         [HttpPost()]
+        [Authorize(Roles = "PayingUser")]
         public async Task<ActionResult<Image>> CreateImage([FromBody] ImageForCreation imageForCreation)
         {
             // Automapper maps only the Title in our configuration
@@ -99,7 +108,14 @@ namespace ImageGallery.API.Controllers
 
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteImage(Guid id)
-        {            
+        {
+            var ownerId = User.Claims
+                .FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
+            if (ownerId == null)
+            {
+                throw new ArgumentNullException(nameof(ownerId));
+            }
+
             var imageFromRepo = await _galleryRepository.GetImageAsync(id);
 
             if (imageFromRepo == null)
