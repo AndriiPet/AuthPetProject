@@ -1,6 +1,5 @@
 ﻿using ImageGallery.API.Services;
 using Microsoft.AspNetCore.Authorization;
-using System.Security.Claims;
 
 namespace ImageGallery.API.Authorization
 {
@@ -18,11 +17,12 @@ namespace ImageGallery.API.Authorization
                 throw new ArgumentNullException(nameof(httpContextAccessor));
         }
 
+
+
         protected override async Task HandleRequirementAsync(
             AuthorizationHandlerContext context, 
             MustOwnImageRequirement requirement)
         {
-            Console.WriteLine("=== HANDLER CALLED ===");
             var imageId = _httpContextAccessor.HttpContext?
                 .GetRouteValue("id")?.ToString();
 

@@ -8,7 +8,7 @@ namespace ImageGallery.Authorization
         {
             return new AuthorizationPolicyBuilder()
                 .RequireAuthenticatedUser()
-                .RequireClaim("country", "pl", "ua")
+                .RequireClaim("country", "be")
                 .RequireRole("PayingUser")
                 .Build();
         }

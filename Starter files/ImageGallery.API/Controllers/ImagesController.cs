@@ -1,10 +1,8 @@
 ﻿using AutoMapper;
-using ImageGallery.API.Authorization;
 using ImageGallery.API.Services;
 using ImageGallery.Model;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using System.Security.Claims;
 
 namespace ImageGallery.API.Controllers
 {
@@ -37,8 +35,9 @@ namespace ImageGallery.API.Controllers
                 .FirstOrDefault(c => c.Type == "sub")?.Value;
             if (ownerId == null)
             {
-                throw new ArgumentNullException(nameof(ownerId));
+                throw new Exception("User identifier is missing from token.");
             }
+
             // get from repo
             var imagesFromRepo = await _galleryRepository.GetImagesAsync(ownerId);
 
@@ -66,8 +65,9 @@ namespace ImageGallery.API.Controllers
         }
 
         [HttpPost()]
+        //[Authorize(Roles = "PayingUser")]
         [Authorize(Policy = "UserCanAddImage")]
-        [Authorize(Policy = "ClientApplcaitionCanWrite")]
+        [Authorize(Policy = "ClientApplicationCanWrite")]
         public async Task<ActionResult<Image>> CreateImage([FromBody] ImageForCreation imageForCreation)
         {
             // Automapper maps only the Title in our configuration
@@ -92,13 +92,20 @@ namespace ImageGallery.API.Controllers
             // fill out the filename
             imageEntity.FileName = fileName;
 
+            // ownerId should be set - can't save image in starter solution, will
+            // be fixed during the course
+            //imageEntity.OwnerId = ...;
+
+            // set the ownerId on the imageEntity
             var ownerId = User.Claims
-                            .FirstOrDefault(c => c.Type == "sub")?.Value;
+                .FirstOrDefault(c => c.Type == "sub")?.Value;
             if (ownerId == null)
             {
-                throw new ArgumentNullException(nameof(ownerId));
+                throw new Exception("User identifier is missing from token.");
             }
             imageEntity.OwnerId = ownerId;
+
+
             // add and save.  
             _galleryRepository.AddImage(imageEntity);
 
@@ -112,16 +119,9 @@ namespace ImageGallery.API.Controllers
         }
 
         [HttpDelete("{id}")]
-        [MustOwnImage]
+        [Authorize("MustOwnImage")]
         public async Task<IActionResult> DeleteImage(Guid id)
-        {
-            var ownerId = User.Claims
-                .FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
-            if (ownerId == null)
-            {
-                throw new ArgumentNullException(nameof(ownerId));
-            }
-
+        {            
             var imageFromRepo = await _galleryRepository.GetImageAsync(id);
 
             if (imageFromRepo == null)

@@ -5,12 +5,9 @@ using ImageGallery.Authorization;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.JsonWebTokens;
 
 var builder = WebApplication.CreateBuilder(args);
-
-builder.Logging.ClearProviders();
-builder.Logging.AddConsole();
-builder.Logging.AddDebug();
 
 // Add services to the container.
 
@@ -31,69 +28,48 @@ builder.Services.AddScoped<IAuthorizationHandler, MustOwnImageHandler>();
 // register AutoMapper-related services
 builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
 
+JsonWebTokenHandler.DefaultInboundClaimTypeMap.Clear();
+
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-    //.AddJwtBearer(options =>
-    //{
-    //    options.Authority = "https://localhost:5001";
-    //    options.Audience = "imagegalleryapi";
-    //    options.TokenValidationParameters = new()
-    //    {
-    //        NameClaimType = "given_name",
-    //        RoleClaimType = "http://schemas.microsoft.com/ws/2008/06/identity/claims/role",
-    //        ValidTypes = new[] { "at+jwt" }
-    //    };
-    //    options.Events = new JwtBearerEvents
-    //    {
-    //        OnAuthenticationFailed = context =>
-    //        {
-    //            Console.WriteLine($"=== AUTHENTICATION FAILED ===");
-    //            Console.WriteLine($"Exception: {context.Exception.Message}");
-    //            return Task.CompletedTask;
-    //        },
-    //        OnTokenValidated = context =>
-    //        {
-    //            Console.WriteLine($"=== TOKEN VALIDATED ===");
-    //            Console.WriteLine($"User: {context.Principal?.Identity?.Name}");
-    //            Console.WriteLine($"Claims:");
-    //            foreach (var claim in context.Principal?.Claims ?? Enumerable.Empty<System.Security.Claims.Claim>())
-    //            {
-    //                Console.WriteLine($"  {claim.Type}: {claim.Value}");
-    //            }
-    //            return Task.CompletedTask;
-    //        },
-    //        OnChallenge = context =>
-    //        {
-    //            Console.WriteLine($"=== AUTHENTICATION CHALLENGE ===");
-    //            Console.WriteLine($"Error: {context.Error}");
-    //            Console.WriteLine($"Error Description: {context.ErrorDescription}");
-    //            return Task.CompletedTask;
-    //        }
-    //    };
-    //});
-    .AddOAuth2Introspection(options =>
-    {
-        options.Authority = "https://localhost:5001";
-        options.ClientId = "imagegalleryapi";
-        options.ClientSecret = "apisecret";
-        options.NameClaimType = "given_name";
-        options.RoleClaimType = "role";
-    });
+      //.AddJwtBearer(options =>
+      //{
+      //    options.Authority = "https://localhost:5001";
+      //    options.Audience = "imagegalleryapi";
+      //    options.TokenValidationParameters = new ()
+      //    {
+      //        NameClaimType = "given_name",
+      //        RoleClaimType = "role",
+      //        ValidTypes = new[] { "at+jwt" }
+      //    };
+      //});
+      .AddOAuth2Introspection(options =>
+      {
+          options.Authority = "https://localhost:5001";
+          options.ClientId = "imagegalleryapi";
+          options.ClientSecret = "apisecret";
+          options.NameClaimType = "given_name";
+          options.RoleClaimType = "role";
+      });
+
 
 builder.Services.AddAuthorization(authorizationOptions =>
-    {
-        authorizationOptions.AddPolicy("UserCanAddImage",
-            AuthorizationPolicies.CanAddImage());
-        authorizationOptions.AddPolicy("ClientApplcaitionCanWrite", policyBuiled =>
+{
+    authorizationOptions.AddPolicy(
+        "UserCanAddImage", AuthorizationPolicies.CanAddImage());
+    authorizationOptions.AddPolicy(
+        "ClientApplicationCanWrite", policyBuilder =>
         {
-            policyBuiled.RequireClaim("scope", "imagegalleryapi.write");
+            policyBuilder.RequireClaim("scope", "imagegalleryapi.write");
         });
-        authorizationOptions.AddPolicy("MustOwnImage", policyBuilder =>
+    authorizationOptions.AddPolicy(
+        "MustOwnImage", policyBuilder =>
         {
             policyBuilder.RequireAuthenticatedUser();
             policyBuilder.AddRequirements(
                 new MustOwnImageRequirement());
+
         });
-    });
+});
 
 var app = builder.Build();
 
