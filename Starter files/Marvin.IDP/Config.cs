@@ -6,8 +6,8 @@ namespace Marvin.IDP;
 public static class Config
 {
     public static IEnumerable<IdentityResource> IdentityResources =>
-             new IdentityResource[]
-             {
+           new IdentityResource[]
+           {
             new IdentityResources.OpenId(),
             new IdentityResources.Profile(),
             new IdentityResource("roles",
@@ -16,7 +16,7 @@ public static class Config
             new IdentityResource("country",
                 "The country you're living in",
                 new List<string>() { "country" })
-             };
+           };
 
     public static IEnumerable<ApiResource> ApiResources =>
      new ApiResource[]
@@ -31,7 +31,7 @@ public static class Config
                 ApiSecrets = { new Secret("apisecret".Sha256()) }
              }
          };
-
+     
     public static IEnumerable<ApiScope> ApiScopes =>
         new ApiScope[]
             {
@@ -41,7 +41,7 @@ public static class Config
 
 
     public static IEnumerable<Client> Clients =>
-        new Client[]
+        new Client[] 
             {
                  new Client()
                 {
@@ -75,6 +75,37 @@ public static class Config
                     ClientSecrets =
                     {
                         new Secret("secret".Sha256())
+                    },
+                    RequireConsent = true
+                },
+                new Client()
+                {
+                    ClientName = "Image Gallery BFF",
+                    ClientId = "imagegallerybff",                    
+                    AccessTokenType = AccessTokenType.Reference,
+                    AllowedGrantTypes = GrantTypes.Code,
+                    AllowOfflineAccess = true,                    
+                    UpdateAccessTokenClaimsOnRefresh = true,
+                    RedirectUris =
+                    {
+                        "https://localhost:7119/signin-oidc"
+                    },
+                    PostLogoutRedirectUris =
+                    {
+                        "https://localhost:7119/signout-callback-oidc"
+                    },
+                    AllowedScopes =
+                    {
+                        IdentityServerConstants.StandardScopes.OpenId,
+                        IdentityServerConstants.StandardScopes.Profile,
+                        "roles", 
+                        "imagegalleryapi.read",
+                        "imagegalleryapi.write",
+                        "country"
+                    },
+                    ClientSecrets =
+                    {
+                        new Secret("anothersecret".Sha256())
                     },
                     RequireConsent = true
                 }
