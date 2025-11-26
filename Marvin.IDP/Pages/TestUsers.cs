@@ -3,8 +3,6 @@
 
 using IdentityModel;
 using System.Security.Claims;
-using System.Text.Json;
-using Duende.IdentityServer;
 using Duende.IdentityServer.Test;
 
 namespace Marvin.IDP;
@@ -26,7 +24,8 @@ public static class TestUsers
                     {
                         new Claim(JwtClaimTypes.GivenName, "David"),
                         new Claim(JwtClaimTypes.FamilyName, "Flagg"),
-                        new Claim("role", "FreeUser")
+                        new Claim("role", "FreeUser"),
+                        new Claim("country", "ua")
                     }
                 },
                 new TestUser
@@ -38,7 +37,8 @@ public static class TestUsers
                     {
                         new Claim(JwtClaimTypes.GivenName, "Emma"),
                         new Claim(JwtClaimTypes.FamilyName, "Flagg"),
-                        new Claim("role", "PayingUser")
+                        new Claim("role", "PayingUser"),
+                        new Claim("country", "pl")
                     }
                 }
             };

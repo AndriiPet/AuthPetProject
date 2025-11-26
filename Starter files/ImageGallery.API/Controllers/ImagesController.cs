@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using ImageGallery.API.Authorization;
 using ImageGallery.API.Services;
 using ImageGallery.Model;
 using Microsoft.AspNetCore.Authorization;
@@ -30,7 +31,6 @@ namespace ImageGallery.API.Controllers
         }
 
         [HttpGet()]
-
         public async Task<ActionResult<IEnumerable<Image>>> GetImages()
         {
             var ownerId = User.Claims
@@ -50,6 +50,7 @@ namespace ImageGallery.API.Controllers
         }
 
         [HttpGet("{id}", Name = "GetImage")]
+        [Authorize("MustOwnImage")]
         public async Task<ActionResult<Image>> GetImage(Guid id)
         {          
             var imageFromRepo = await _galleryRepository.GetImageAsync(id);
@@ -65,7 +66,8 @@ namespace ImageGallery.API.Controllers
         }
 
         [HttpPost()]
-        [Authorize(Roles = "PayingUser")]
+        [Authorize(Policy = "UserCanAddImage")]
+        [Authorize(Policy = "ClientApplcaitionCanWrite")]
         public async Task<ActionResult<Image>> CreateImage([FromBody] ImageForCreation imageForCreation)
         {
             // Automapper maps only the Title in our configuration
@@ -90,10 +92,13 @@ namespace ImageGallery.API.Controllers
             // fill out the filename
             imageEntity.FileName = fileName;
 
-            // ownerId should be set - can't save image in starter solution, will
-            // be fixed during the course
-            //imageEntity.OwnerId = ...;
-
+            var ownerId = User.Claims
+                            .FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
+            if (ownerId == null)
+            {
+                throw new ArgumentNullException(nameof(ownerId));
+            }
+            imageEntity.OwnerId = ownerId;
             // add and save.  
             _galleryRepository.AddImage(imageEntity);
 
@@ -107,6 +112,7 @@ namespace ImageGallery.API.Controllers
         }
 
         [HttpDelete("{id}")]
+        [MustOwnImage]
         public async Task<IActionResult> DeleteImage(Guid id)
         {
             var ownerId = User.Claims
@@ -131,6 +137,7 @@ namespace ImageGallery.API.Controllers
         }
 
         [HttpPut("{id}")]
+        [Authorize("MustOwnImage")]
         public async Task<IActionResult> UpdateImage(Guid id, 
             [FromBody] ImageForUpdate imageForUpdate)
         {

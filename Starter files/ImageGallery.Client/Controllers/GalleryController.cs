@@ -129,7 +129,7 @@ namespace ImageGallery.Client.Controllers
             return RedirectToAction("Index");
         }
 
-        [Authorize(Roles = "PayingUser")]
+        [Authorize(Policy = "UserCanAddImage")]
         public IActionResult AddImage()
         {
             return View();
@@ -137,7 +137,7 @@ namespace ImageGallery.Client.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        [Authorize(Roles = "PayingUser")]
+        [Authorize(Policy = "UserCanAddImage")]
         public async Task<IActionResult> AddImage(AddImageViewModel addImageViewModel)
         {
             if (!ModelState.IsValid)
@@ -193,6 +193,9 @@ namespace ImageGallery.Client.Controllers
             var accessToken = await HttpContext
                 .GetTokenAsync(OpenIdConnectParameterNames.AccessToken);
 
+            var refreshToken = await HttpContext
+                .GetTokenAsync(OpenIdConnectParameterNames.RefreshToken);
+
             var userClaimStringBuilder = new StringBuilder();
 
             foreach(var claim in User.Claims)
@@ -206,6 +209,9 @@ namespace ImageGallery.Client.Controllers
 
             _logger.LogInformation($"Access token: " +
                 $"{accessToken}");
+
+            _logger.LogInformation($"Refresh token: " +
+                $"\n{refreshToken}");
         }
     }
 }

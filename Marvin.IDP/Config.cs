@@ -12,7 +12,10 @@ public static class Config
             new IdentityResources.Profile(),
             new IdentityResource("roles", 
                 "Your roles",
-                new [] { "role" })
+                new [] { "role" }),
+            new IdentityResource("country",
+                "The country you're living in",
+                new [] { "country" }),
         };
 
     public static IEnumerable<ApiResource> ApiResource =>
@@ -20,16 +23,23 @@ public static class Config
         {
             new ApiResource("imagegalleryapi", 
                 "Image Gallery API",
-                new [] {"role"})
+                new [] {"role", "country"})
             {
-                Scopes = { "imagegalleryapi.fullaccess" }
-            }
+                Scopes = 
+                { 
+                    "imagegalleryapi.fullaccess",
+                    "imagegalleryapi.read", 
+                    "imagegalleryapi.write" 
+                },
+            },
         };
 
     public static IEnumerable<ApiScope> ApiScopes =>
         new ApiScope[]
             { 
-                new ApiScope("imagegalleryapi.fullaccess")
+                new ApiScope("imagegalleryapi.fullaccess"),
+                new ApiScope("imagegalleryapi.write"),
+                new ApiScope("imagegalleryapi.read")
             };
 
     public static IEnumerable<Client> Clients =>
@@ -40,6 +50,11 @@ public static class Config
                     ClientName = "Image Gallary",
                     ClientId = "imageGallryClient",
                     AllowedGrantTypes = GrantTypes.Code,
+                    AllowOfflineAccess = true,
+                    UpdateAccessTokenClaimsOnRefresh = true,
+                    AccessTokenLifetime = 120,
+                    //AuthorizationCodeLifetime = 5 min
+                    //IdentityTokenLifetime = 5 min
                     RedirectUris =
                     {
                         "https://localhost:7184/signin-oidc"
@@ -53,7 +68,9 @@ public static class Config
                         IdentityServerConstants.StandardScopes.OpenId,
                         IdentityServerConstants.StandardScopes.Profile,
                         "roles",
-                        "imagegalleryapi.fullaccess"
+                        "imagegalleryapi.write",
+                        "imagegalleryapi.read",
+                        "country"
                     },
                     ClientSecrets =
                     {
