@@ -34,7 +34,7 @@ namespace ImageGallery.API.Controllers
         public async Task<ActionResult<IEnumerable<Image>>> GetImages()
         {
             var ownerId = User.Claims
-                .FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
+                .FirstOrDefault(c => c.Type == "sub")?.Value;
             if (ownerId == null)
             {
                 throw new ArgumentNullException(nameof(ownerId));
@@ -93,7 +93,7 @@ namespace ImageGallery.API.Controllers
             imageEntity.FileName = fileName;
 
             var ownerId = User.Claims
-                            .FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
+                            .FirstOrDefault(c => c.Type == "sub")?.Value;
             if (ownerId == null)
             {
                 throw new ArgumentNullException(nameof(ownerId));

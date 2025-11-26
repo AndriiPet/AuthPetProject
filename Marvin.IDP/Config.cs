@@ -31,13 +31,13 @@ public static class Config
                     "imagegalleryapi.read", 
                     "imagegalleryapi.write" 
                 },
+                ApiSecrets = {new Secret("apisecret".Sha256())}
             },
         };
 
     public static IEnumerable<ApiScope> ApiScopes =>
         new ApiScope[]
             { 
-                new ApiScope("imagegalleryapi.fullaccess"),
                 new ApiScope("imagegalleryapi.write"),
                 new ApiScope("imagegalleryapi.read")
             };
@@ -50,6 +50,7 @@ public static class Config
                     ClientName = "Image Gallary",
                     ClientId = "imageGallryClient",
                     AllowedGrantTypes = GrantTypes.Code,
+                    AccessTokenType = AccessTokenType.Reference,
                     AllowOfflineAccess = true,
                     UpdateAccessTokenClaimsOnRefresh = true,
                     AccessTokenLifetime = 120,

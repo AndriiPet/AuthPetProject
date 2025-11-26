@@ -34,7 +34,7 @@ namespace ImageGallery.API.Authorization
 
             // get the sub claim
             var ownerId = context.User
-                .Claims.FirstOrDefault(c => c.Type == "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier")?.Value;
+                .Claims.FirstOrDefault(c => c.Type == "sub")?.Value;
             // if it cannot be found, the handler fails 
             if (ownerId == null)
             {

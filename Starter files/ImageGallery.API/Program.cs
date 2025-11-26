@@ -32,46 +32,54 @@ builder.Services.AddScoped<IAuthorizationHandler, MustOwnImageHandler>();
 builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
 
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-    .AddJwtBearer(options =>
+    //.AddJwtBearer(options =>
+    //{
+    //    options.Authority = "https://localhost:5001";
+    //    options.Audience = "imagegalleryapi";
+    //    options.TokenValidationParameters = new()
+    //    {
+    //        NameClaimType = "given_name",
+    //        RoleClaimType = "http://schemas.microsoft.com/ws/2008/06/identity/claims/role",
+    //        ValidTypes = new[] { "at+jwt" }
+    //    };
+    //    options.Events = new JwtBearerEvents
+    //    {
+    //        OnAuthenticationFailed = context =>
+    //        {
+    //            Console.WriteLine($"=== AUTHENTICATION FAILED ===");
+    //            Console.WriteLine($"Exception: {context.Exception.Message}");
+    //            return Task.CompletedTask;
+    //        },
+    //        OnTokenValidated = context =>
+    //        {
+    //            Console.WriteLine($"=== TOKEN VALIDATED ===");
+    //            Console.WriteLine($"User: {context.Principal?.Identity?.Name}");
+    //            Console.WriteLine($"Claims:");
+    //            foreach (var claim in context.Principal?.Claims ?? Enumerable.Empty<System.Security.Claims.Claim>())
+    //            {
+    //                Console.WriteLine($"  {claim.Type}: {claim.Value}");
+    //            }
+    //            return Task.CompletedTask;
+    //        },
+    //        OnChallenge = context =>
+    //        {
+    //            Console.WriteLine($"=== AUTHENTICATION CHALLENGE ===");
+    //            Console.WriteLine($"Error: {context.Error}");
+    //            Console.WriteLine($"Error Description: {context.ErrorDescription}");
+    //            return Task.CompletedTask;
+    //        }
+    //    };
+    //});
+    .AddOAuth2Introspection(options =>
     {
         options.Authority = "https://localhost:5001";
-        options.Audience = "imagegalleryapi";
-        options.TokenValidationParameters = new()
-        {
-            NameClaimType = "given_name",
-            RoleClaimType = "http://schemas.microsoft.com/ws/2008/06/identity/claims/role",
-            ValidTypes = new[] { "at+jwt" }
-        };
-        options.Events = new JwtBearerEvents
-        {
-            OnAuthenticationFailed = context =>
-            {
-                Console.WriteLine($"=== AUTHENTICATION FAILED ===");
-                Console.WriteLine($"Exception: {context.Exception.Message}");
-                return Task.CompletedTask;
-            },
-            OnTokenValidated = context =>
-            {
-                Console.WriteLine($"=== TOKEN VALIDATED ===");
-                Console.WriteLine($"User: {context.Principal?.Identity?.Name}");
-                Console.WriteLine($"Claims:");
-                foreach (var claim in context.Principal?.Claims ?? Enumerable.Empty<System.Security.Claims.Claim>())
-                {
-                    Console.WriteLine($"  {claim.Type}: {claim.Value}");
-                }
-                return Task.CompletedTask;
-            },
-            OnChallenge = context =>
-            {
-                Console.WriteLine($"=== AUTHENTICATION CHALLENGE ===");
-                Console.WriteLine($"Error: {context.Error}");
-                Console.WriteLine($"Error Description: {context.ErrorDescription}");
-                return Task.CompletedTask;
-            }
-        };
+        options.ClientId = "imagegalleryapi";
+        options.ClientSecret = "apisecret";
+        options.NameClaimType = "given_name";
+        options.RoleClaimType = "role";
     });
 
-    builder.Services.AddAuthorization(authorizationOptions =>
+builder.Services.AddAuthorization(authorizationOptions =>
     {
         authorizationOptions.AddPolicy("UserCanAddImage",
             AuthorizationPolicies.CanAddImage());
