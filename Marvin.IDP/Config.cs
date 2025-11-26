@@ -53,7 +53,7 @@ public static class Config
                     AccessTokenType = AccessTokenType.Reference,
                     AllowOfflineAccess = true,
                     UpdateAccessTokenClaimsOnRefresh = true,
-                    AccessTokenLifetime = 120,
+                    AccessTokenLifetime = 3600,
                     //AuthorizationCodeLifetime = 5 min
                     //IdentityTokenLifetime = 5 min
                     RedirectUris =
