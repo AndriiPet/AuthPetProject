@@ -1,3 +1,6 @@
+using Marvin.IDP.DbContexts;
+using Marvin.IDP.Services;
+using Microsoft.EntityFrameworkCore;
 using Serilog;
 
 namespace Marvin.IDP;
@@ -9,6 +12,14 @@ internal static class HostingExtensions
     {
         // uncomment if you want to add a UI
         builder.Services.AddRazorPages();
+
+        builder.Services.AddScoped<ILocalUserService, LocalUserService>();
+
+        builder.Services.AddDbContext<IdentityDbContext>(options =>
+        {
+            options.UseSqlite(
+                builder.Configuration.GetConnectionString("MarvinIdentityDBConnectionString"));
+        });
 
         builder.Services.AddIdentityServer(options =>
             {
