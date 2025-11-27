@@ -17,12 +17,8 @@ namespace Marvin.IDP.Services
         Task<User> GetUserBySubjectAsync(
             string subject);
 
-        void AddUser(
-          User userToAdd,
-          string password);
-
-        Task<bool> ActivateUserAsync(
-            string securityCode);
+        void AddUser
+            (User userToAdd);
 
         Task<bool> IsUserActive(
             string subject);
