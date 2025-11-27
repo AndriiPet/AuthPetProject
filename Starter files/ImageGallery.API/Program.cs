@@ -51,6 +51,7 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
           options.RoleClaimType = "role";
       });
 
+
 builder.Services.AddAuthorization(authorizationOptions =>
 {
     authorizationOptions.AddPolicy(
